@@ -13,6 +13,8 @@ const destinations = isGlobal
   ? [
       path.join(os.homedir(), '.agents', 'skills', 'vibecheck', 'SKILL.md'),
       path.join(os.homedir(), '.claude', 'skills', 'vibecheck', 'SKILL.md'),
+      path.join(os.homedir(), '.codeium', 'windsurf', 'skills', 'vibecheck', 'SKILL.md'),
+      path.join(os.homedir(), '.gemini', 'config', 'skills', 'vibecheck', 'SKILL.md'),
     ]
   : [
       path.join(process.cwd(), '.agents', 'skills', 'vibecheck', 'SKILL.md'),

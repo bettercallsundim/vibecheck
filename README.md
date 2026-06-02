@@ -82,7 +82,7 @@ Use the universal path above when possible. If your tool requires a dedicated sk
 | Windsurf | `~/.codeium/windsurf/skills/vibecheck/SKILL.md` |
 | GitHub Copilot | `~/.copilot/skills/vibecheck/SKILL.md` |
 | Codex CLI | `~/.agents/skills/vibecheck/SKILL.md` |
-| Antigravity | `~/.agents/skills/vibecheck/SKILL.md` |
+| Antigravity | `~/.gemini/config/skills/vibecheck/SKILL.md` |
 
 No API keys. No background service. No runtime dependencies.
 
