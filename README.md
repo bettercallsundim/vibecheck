@@ -53,13 +53,13 @@ npx vibecheck-skill
 
 Installs to `.agents/skills/vibecheck/SKILL.md` in your current project. Commit it to share the skill with your whole team.
 
-### npx — global (all projects on this machine)
+### npx — global (all tools on this machine)
 
 ```bash
 npx vibecheck-skill --global
 ```
 
-Installs to `~/.agents/skills/` and `~/.claude/skills/` — available in every project.
+Installs to all 6 tool-specific paths at once — Claude Code, Cursor, Windsurf, Copilot, Codex CLI, and Antigravity.
 
 ### curl — manual global install
 

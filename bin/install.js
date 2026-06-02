@@ -11,9 +11,11 @@ const SKILL_SRC = path.join(__dirname, '..', 'SKILL.md')
 
 const destinations = isGlobal
   ? [
-      path.join(os.homedir(), '.agents', 'skills', 'vibecheck', 'SKILL.md'),
       path.join(os.homedir(), '.claude', 'skills', 'vibecheck', 'SKILL.md'),
+      path.join(os.homedir(), '.cursor', 'skills', 'vibecheck', 'SKILL.md'),
       path.join(os.homedir(), '.codeium', 'windsurf', 'skills', 'vibecheck', 'SKILL.md'),
+      path.join(os.homedir(), '.copilot', 'skills', 'vibecheck', 'SKILL.md'),
+      path.join(os.homedir(), '.agents', 'skills', 'vibecheck', 'SKILL.md'),
       path.join(os.homedir(), '.gemini', 'config', 'skills', 'vibecheck', 'SKILL.md'),
     ]
   : [
