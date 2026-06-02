@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>vibecheck - Understand AI-written code before you ship it</title>
+  <meta name="description" content="vibecheck turns AI-written code changes into a short reading path, risk check, and optional quiz.">
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <meta property="og:image" content="./assets/readme-hero.png">
+  <style>
+    :root {
+      --ink: #11110f;
+      --paper: #fbfaf5;
+      --muted: #66635d;
+      --line: #ddd8c8;
+      --acid: #c6ff3d;
+      --aqua: #42e8d4;
+      --danger: #ff4f4f;
+      --gold: #ffd166;
+      --violet: #b9a7ff;
+      --rose: #ff7a90;
+      --panel: #181815;
+      --panel-soft: #25241f;
+      --shadow: 0 24px 80px rgba(17, 17, 15, 0.16);
+      --mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", Menlo, monospace;
+      --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --serif: Georgia, "Times New Roman", serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    img,
+    svg,
+    video,
+    canvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(90deg, rgba(17, 17, 15, 0.045) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(17, 17, 15, 0.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 42px 42px;
+      color: var(--ink);
+      font-family: var(--sans);
+      letter-spacing: 0;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 22px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      text-decoration: none;
+    }
+
+    .mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border: 2px solid var(--ink);
+      background: var(--acid);
+      box-shadow: 4px 4px 0 var(--ink);
+      font-family: var(--mono);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(380px, 1.05fr);
+      gap: clamp(24px, 4vw, 42px);
+      align-items: center;
+      min-height: calc(100vh - 86px);
+      padding: clamp(24px, 5vw, 56px) 0 clamp(56px, 8vw, 96px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      margin-bottom: 22px;
+      padding: 8px 12px;
+      border: 1px solid var(--ink);
+      background: #fff;
+      font-family: var(--mono);
+      font-size: 12px;
+      box-shadow: 3px 3px 0 var(--ink);
+    }
+
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-family: var(--serif);
+      font-size: clamp(48px, 6.3vw, 96px);
+      line-height: 0.92;
+      letter-spacing: 0;
+    }
+
+    code {
+      padding: 0 0.18em;
+      border: 1px solid rgba(17, 17, 15, 0.18);
+      background: rgba(198, 255, 61, 0.34);
+      font-family: var(--mono);
+      font-size: 0.9em;
+    }
+
+    .hero-copy {
+      max-width: 620px;
+      margin: 26px 0 0;
+      color: #35332f;
+      font-size: clamp(18px, 2vw, 21px);
+      line-height: 1.45;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 18px;
+      border: 2px solid var(--ink);
+      background: var(--ink);
+      color: #fff;
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 5px 5px 0 var(--acid);
+      text-align: center;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--acid);
+    }
+
+    .button.secondary {
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 5px 5px 0 var(--aqua);
+    }
+
+    .terminal {
+      width: 100%;
+      min-width: 0;
+      border: 2px solid var(--ink);
+      background:
+        radial-gradient(circle at 18% 0%, rgba(66, 232, 212, 0.22), transparent 34%),
+        radial-gradient(circle at 88% 12%, rgba(198, 255, 61, 0.18), transparent 28%),
+        linear-gradient(135deg, #11120f 0%, #181815 54%, #0f1615 100%);
+      color: #f8f6ef;
+      box-shadow: var(--shadow), 8px 8px 0 var(--ink);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .terminal::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 100% 24px, 32px 100%;
+      mix-blend-mode: screen;
+    }
+
+    .terminal::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border: 1px solid rgba(198, 255, 61, 0.2);
+    }
+
+    .terminal-top {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      background:
+        linear-gradient(90deg, rgba(198, 255, 61, 0.12), transparent 34%),
+        #0d0d0b;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #aaa698;
+    }
+
+    .terminal-title {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dots {
+      display: flex;
+      gap: 7px;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--danger);
+    }
+
+    .dot:nth-child(2) {
+      background: #ffd166;
+    }
+
+    .dot:nth-child(3) {
+      background: var(--acid);
+    }
+
+    .terminal-body {
+      position: relative;
+      z-index: 1;
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .command-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .chip {
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent),
+        var(--panel-soft);
+      color: #f8f6ef;
+      padding: 8px 10px;
+      font-family: var(--mono);
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 140ms ease, border-color 140ms ease, color 140ms ease, background 140ms ease;
+    }
+
+    .chip:hover {
+      transform: translateY(-1px);
+      border-color: var(--aqua);
+      color: var(--aqua);
+    }
+
+    .chip.active {
+      border-color: var(--acid);
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, var(--acid), var(--aqua));
+      box-shadow: 0 0 22px rgba(198, 255, 61, 0.28);
+    }
+
+    .output {
+      min-height: 450px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .term-line {
+      color: #e9e5d6;
+      line-height: 1.5;
+    }
+
+    .term-title {
+      color: var(--acid);
+      font-weight: 800;
+      text-shadow: 0 0 18px rgba(198, 255, 61, 0.24);
+    }
+
+    .term-subtitle {
+      color: #fff7c2;
+    }
+
+    .term-section {
+      margin-top: 8px;
+      color: var(--aqua);
+      font-weight: 800;
+    }
+
+    .term-step {
+      display: grid;
+      gap: 4px;
+      padding: 10px 12px;
+      border-left: 3px solid var(--aqua);
+      background: rgba(66, 232, 212, 0.08);
+      min-width: 0;
+    }
+
+    .term-step:nth-of-type(odd) {
+      border-left-color: var(--acid);
+      background: rgba(198, 255, 61, 0.07);
+    }
+
+    .term-index {
+      color: var(--gold);
+      font-weight: 800;
+    }
+
+    .term-file {
+      color: var(--violet);
+      overflow-wrap: anywhere;
+    }
+
+    .term-risk {
+      display: inline-block;
+      width: fit-content;
+      margin-top: 2px;
+      padding: 2px 7px;
+      border: 1px solid currentColor;
+      color: var(--gold);
+      background: rgba(255, 209, 102, 0.12);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .term-risk.high {
+      color: var(--rose);
+      background: rgba(255, 122, 144, 0.12);
+    }
+
+    .term-bullet {
+      color: #d8d3c4;
+      padding-left: 12px;
+      border-left: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .term-question {
+      color: #f5f0df;
+      padding: 8px 10px;
+      border: 1px solid rgba(185, 167, 255, 0.38);
+      background: rgba(185, 167, 255, 0.11);
+    }
+
+    .muted {
+      color: #9f9a8e;
+    }
+
+    .section {
+      padding: clamp(56px, 8vw, 86px) 0;
+      border-top: 2px solid var(--ink);
+    }
+
+    .section h2 {
+      max-width: 780px;
+      margin: 0 0 18px;
+      font-family: var(--serif);
+      font-size: clamp(38px, 5vw, 68px);
+      line-height: 0.98;
+    }
+
+    .section-lead {
+      max-width: 720px;
+      margin: 0 0 34px;
+      color: var(--muted);
+      font-size: clamp(17px, 2vw, 19px);
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .feature {
+      min-height: 210px;
+      padding: 24px;
+      border: 2px solid var(--ink);
+      background: #fff;
+      box-shadow: 5px 5px 0 rgba(17, 17, 15, 0.18);
+    }
+
+    .feature strong {
+      display: block;
+      margin-bottom: 16px;
+      font-size: 19px;
+    }
+
+    .feature p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .install {
+      display: grid;
+      grid-template-columns: 1fr 0.85fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .copy-box {
+      border: 2px solid var(--ink);
+      background: #fff;
+      box-shadow: 6px 6px 0 var(--aqua);
+      overflow: hidden;
+    }
+
+    .copy-box pre {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .install-options {
+      display: grid;
+      gap: 14px;
+    }
+
+    .install-note {
+      margin: 0;
+      padding: 12px 20px 14px;
+      background: #f4f2e8;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .copy-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 2px solid var(--ink);
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--acid);
+    }
+
+    .copy-button {
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: #fff;
+      padding: 7px 10px;
+      font-family: var(--mono);
+      cursor: pointer;
+    }
+
+    pre {
+      margin: 0;
+      padding: 20px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .steps {
+      display: grid;
+      gap: 10px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 14px;
+      align-items: start;
+      padding: 16px;
+      border: 2px solid var(--ink);
+      background: #fff;
+    }
+
+    .num {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      background: var(--ink);
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .step p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .footer {
+      padding: 34px 0 48px;
+      border-top: 2px solid var(--ink);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .footer .shell {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 1180px) {
+      .hero {
+        grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
+      }
+
+      h1 {
+        font-size: clamp(48px, 6vw, 82px);
+      }
+
+      .terminal-body {
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .install {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+        align-items: start;
+      }
+
+      h1,
+      .hero-copy {
+        max-width: 780px;
+      }
+
+      .terminal {
+        max-width: 820px;
+      }
+
+      .grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .feature {
+        min-height: auto;
+      }
+
+      .copy-head {
+        gap: 12px;
+      }
+
+      .footer .shell {
+        display: grid;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .shell {
+        width: min(100% - 22px, 1180px);
+      }
+
+      .nav {
+        padding: 18px 0;
+      }
+
+      .mark {
+        width: 32px;
+        height: 32px;
+      }
+
+      .eyebrow {
+        max-width: 100%;
+        font-size: 11px;
+        line-height: 1.35;
+      }
+
+      h1 {
+        font-size: clamp(43px, 12.2vw, 56px);
+        line-height: 0.96;
+      }
+
+      .hero-copy {
+        margin-top: 20px;
+        font-size: 18px;
+      }
+
+      .hero-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .button {
+        min-height: 50px;
+        padding: 0 12px;
+      }
+
+      .terminal-body {
+        padding: 14px 12px;
+        font-size: 12px;
+      }
+
+      .terminal {
+        width: 100%;
+        box-shadow: 4px 4px 0 var(--ink);
+      }
+
+      .terminal-top {
+        padding: 10px;
+      }
+
+      .command-row {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .chip {
+        width: 100%;
+        min-height: 38px;
+        text-align: left;
+      }
+
+      .output {
+        min-height: 0;
+        gap: 9px;
+      }
+
+      .term-step,
+      .term-question {
+        padding: 9px 10px;
+      }
+
+      .section h2 {
+        font-size: clamp(34px, 10vw, 46px);
+      }
+
+      .step {
+        grid-template-columns: 36px 1fr;
+        gap: 10px;
+        padding: 14px;
+      }
+
+      .num {
+        width: 32px;
+        height: 32px;
+      }
+
+      pre {
+        padding: 14px;
+        font-size: 12px;
+      }
+
+      .copy-box pre {
+        padding: 14px;
+      }
+
+      .install-note {
+        padding: 11px 14px 13px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .shell {
+        width: min(100% - 18px, 1180px);
+      }
+
+      h1 {
+        font-size: clamp(38px, 12vw, 44px);
+      }
+
+      .hero-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .terminal-body {
+        font-size: 11.5px;
+      }
+
+      .terminal-title {
+        max-width: 190px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="shell nav">
+    <a class="brand" href="#top" aria-label="vibecheck home">
+      <span class="mark">/v</span>
+      <span>vibecheck</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary navigation">
+      <a href="#demo">Demo</a>
+      <a href="#why">Why</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/bettercallsundim/vibecheck">GitHub</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="shell hero">
+      <div>
+        <div class="eyebrow">AI wrote it. You still own it.</div>
+        <h1>Understand AI-written code before you ship it.</h1>
+        <p class="hero-copy">
+          <code>vibecheck</code> turns fresh agent edits into a short reading path, risk check,
+          and optional quiz so you know what changed before it becomes production lore.
+        </p>
+        <div class="hero-actions">
+          <a class="button" href="#install">Install the skill</a>
+          <a class="button secondary" href="#demo">Try the demo</a>
+        </div>
+      </div>
+
+      <aside class="terminal" id="demo" aria-label="Interactive vibecheck demo">
+        <div class="terminal-top">
+          <div class="dots" aria-hidden="true">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <span class="terminal-title">interactive walkthrough</span>
+        </div>
+        <div class="terminal-body">
+          <div class="command-row" role="tablist" aria-label="Demo commands">
+            <button class="chip active" data-demo="auth" type="button">/vibecheck</button>
+            <button class="chip" data-demo="branch" type="button">/vibecheck main</button>
+            <button class="chip" data-demo="quiz" type="button">/vibecheck --quiz</button>
+          </div>
+          <div class="output" id="demo-output" aria-live="polite"></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section" id="why">
+      <div class="shell">
+        <h2>Your AI just shipped a plot twist.</h2>
+        <p class="section-lead">
+          One prompt later, your repo has new routes, helpers, env vars, and a migration
+          with a suspiciously confident name. `vibecheck` turns that surprise diff into a
+          quick field guide: where to start, what to skip, what might bite, and what to ask next.
+        </p>
+        <div class="grid">
+          <article class="feature">
+            <strong>Follow the story, not the file list</strong>
+            <p>Diffs read like a receipt. Code runs like a story. VibeCheck orders the tour by how the feature actually works: data shape, logic, route, UI, tests.</p>
+          </article>
+          <article class="feature">
+            <strong>Find the spicy parts fast</strong>
+            <p>Auth touched? Payment webhook added? Env var renamed? Database rows deleted? VibeCheck marks the parts worth slowing down for, without yelling about every import.</p>
+          </article>
+          <article class="feature">
+            <strong>Make your brain prove it loaded</strong>
+            <p>Quiz mode asks three tiny, targeted questions about the exact diff. If you can answer them, you understand it. If not, you found the next thing to inspect.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="install">
+      <div class="shell install">
+        <div>
+          <h2>Install once. Run after every agent session.</h2>
+          <p class="section-lead">
+            Use `npx` for a project install, add `--global` for every project on this
+            machine, or copy the skill manually with curl.
+          </p>
+          <div class="install-options">
+            <div class="copy-box">
+              <div class="copy-head">
+                <span>npx - per project</span>
+                <button class="copy-button" type="button" data-copy="#install-project-command">Copy</button>
+              </div>
+              <pre id="install-project-command">npx vibecheck-skill</pre>
+              <p class="install-note">Installs to `.agents/skills/vibecheck/SKILL.md` in the current project. Commit it to share with your team.</p>
+            </div>
+            <div class="copy-box">
+              <div class="copy-head">
+                <span>npx - global</span>
+                <button class="copy-button" type="button" data-copy="#install-global-command">Copy</button>
+              </div>
+              <pre id="install-global-command">npx vibecheck-skill --global</pre>
+              <p class="install-note">Installs to `~/.agents/skills/` and `~/.claude/skills/` so it is available across projects.</p>
+            </div>
+            <div class="copy-box">
+              <div class="copy-head">
+                <span>curl - manual global</span>
+                <button class="copy-button" type="button" data-copy="#install-curl-command">Copy</button>
+              </div>
+              <pre id="install-curl-command">mkdir -p ~/.agents/skills/vibecheck && \
+curl -fsSL https://raw.githubusercontent.com/bettercallsundim/vibecheck/main/SKILL.md \
+  -o ~/.agents/skills/vibecheck/SKILL.md</pre>
+              <p class="install-note">Restart your AI coding tool after any install method, then run `/vibecheck` in a repo with fresh changes.</p>
+            </div>
+          </div>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <span class="num">1</span>
+            <div>
+              <strong>Install the skill</strong>
+              <p>No dependencies, keys, daemon, or package manager required.</p>
+            </div>
+          </div>
+          <div class="step">
+            <span class="num">2</span>
+            <div>
+              <strong>Let your agent write code</strong>
+              <p>Claude Code, Cursor, Windsurf, Copilot, Codex CLI, or any compatible skill runner.</p>
+            </div>
+          </div>
+          <div class="step">
+            <span class="num">3</span>
+            <div>
+              <strong>Run `/vibecheck`</strong>
+              <p>Get a short walkthrough, real risks, and the follow-up questions worth asking.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell">
+      <span>MIT licensed. Built for developers who use AI and still care about understanding.</span>
+      <span><a href="./README.md">README</a> · <a href="./CONTRIBUTING.md">Contribute</a></span>
+    </div>
+  </footer>
+
+  <script>
+    const demos = {
+      auth: `
+        <div class="term-line term-title">VibeCheck: Feature flag bug fix</div>
+        <div class="term-line term-subtitle">Fixes a feature flag check that was letting disabled users see the new UI. The agent changed the helper, one page, and the regression test.</div>
+        <div class="term-line term-section">Read it in this order</div>
+        <div class="term-step">
+          <div><span class="term-index">1 - The flag helper</span> <span class="term-file">src/features/isEnabled.ts:18</span></div>
+          <div>This is the actual bug fix. Read it first because every caller depends on true or false.</div>
+        </div>
+        <div class="term-step">
+          <div><span class="term-index">2 - The page guard</span> <span class="term-file">src/pages/dashboard.tsx:41</span></div>
+          <div>The page now uses the helper before showing the new panel.</div>
+          <span class="term-risk">Medium - UI visibility changed</span>
+        </div>
+        <div class="term-step">
+          <div><span class="term-index">3 - The regression test</span> <span class="term-file">tests/features.test.ts:27</span></div>
+          <div>Proves disabled flags hide the panel instead of silently leaking it.</div>
+        </div>
+        <div class="term-line term-section">What could break</div>
+        <div class="term-bullet">src/pages/settings.tsx has a similar flag check but was not updated</div>`,
+      branch: `
+        <div class="term-line term-title">VibeCheck: Release branch vs main</div>
+        <div class="term-line term-subtitle">Groups the meaningful branch changes into one readable path: config, behavior, UI, and tests.</div>
+        <div class="term-line term-section">Read it in this order</div>
+        <div class="term-step">
+          <div><span class="term-index">1 - Config switch</span> <span class="term-file">src/config/features.ts:9</span></div>
+          <div>Introduces the new rollout flag that controls the rest of the branch.</div>
+        </div>
+        <div class="term-step">
+          <div><span class="term-index">2 - Dashboard panel</span> <span class="term-file">src/pages/dashboard.tsx:44</span></div>
+          <div>Shows the new panel only when the rollout flag is enabled.</div>
+          <span class="term-risk">Medium - visibility changed</span>
+        </div>
+        <div class="term-step">
+          <div><span class="term-index">3 - Branch tests</span> <span class="term-file">tests/dashboard.test.ts:33</span></div>
+          <div>Confirms the hidden and visible states both behave as expected.</div>
+        </div>
+        <div class="term-line term-section">What could break</div>
+        <div class="term-bullet">src/pages/settings.tsx still reads the flag directly instead of using the helper</div>`,
+      quiz: `
+        <div class="term-line term-title">VibeCheck: Prisma user migration</div>
+        <div class="term-line term-subtitle">Adds user status and lastLoginAt fields, then updates login code.</div>
+        <div class="term-line term-section">Read it in this order</div>
+        <div class="term-step">
+          <div><span class="term-index">1 - Migration</span> <span class="term-file">prisma/migrations/20260602_add_user_status/migration.sql</span></div>
+          <div>Adds a non-null status column with default active.</div>
+        </div>
+        <div class="term-step">
+          <div><span class="term-index">2 - User model</span> <span class="term-file">prisma/schema.prisma:18</span></div>
+          <div>Exposes status and lastLoginAt to generated client calls.</div>
+        </div>
+        <div class="term-step">
+          <div><span class="term-index">3 - Login update</span> <span class="term-file">src/auth/login.ts:44</span></div>
+          <div>Rejects disabled users before issuing tokens.</div>
+        </div>
+        <div class="term-line term-section">Quick check - did it land?</div>
+        <div class="term-question">Q1: Why does the migration need a default for status?</div>
+        <div class="term-question">Q2: What should happen to existing disabled users after deploy?</div>
+        <div class="term-question">Q3: Which tests prove login rejects disabled accounts?</div>`
+    };
+
+    const output = document.querySelector("#demo-output");
+    const chips = Array.from(document.querySelectorAll(".chip"));
+
+    function setDemo(key) {
+      output.innerHTML = demos[key];
+      chips.forEach((chip) => {
+        chip.classList.toggle("active", chip.dataset.demo === key);
+      });
+    }
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => setDemo(chip.dataset.demo));
+    });
+
+    document.querySelectorAll("[data-copy]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const target = document.querySelector(button.dataset.copy);
+        const text = target ? target.textContent : "";
+        try {
+          await navigator.clipboard.writeText(text);
+          button.textContent = "Copied";
+          setTimeout(() => {
+            button.textContent = "Copy";
+          }, 1600);
+        } catch {
+          button.textContent = "Select";
+        }
+      });
+    });
+
+    setDemo("auth");
+  </script>
+</body>
+</html>
