@@ -41,34 +41,6 @@ Run:
 /vibecheck
 ```
 
-Get:
-
-```text
-What this does: Fixes a feature flag check that was letting disabled users see
-the new UI. The agent changed the helper, one page, and the test that proves it.
-
-Read it in this order:
-
-1 - The flag helper   src/features/isEnabled.ts:18
-This is the actual bug fix. Read it first because everything else depends on
-whether this returns true or false.
-
-2 - The page guard   src/pages/dashboard.tsx:41
-The page now uses the helper before showing the new panel. MEDIUM - this changes
-what some users can see.
-
-3 - The regression test   tests/features.test.ts:27
-The new test covers the bug the agent was trying to fix: disabled flags should
-hide the panel.
-
-What could break:
-- src/pages/settings.tsx has a similar flag check but was not updated
-
-Go deeper:
-- Show me which users see different UI after this change
-- Is there another page using the old flag pattern?
-```
-
 ---
 
 ## Install
