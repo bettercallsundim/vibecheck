@@ -38,8 +38,11 @@ No git repo / clean tree → ask: "Which file or folder should I walk you throug
 Look back at this session. Did you (the AI) write, edit, or create any files in this conversation?
 Check for: Write tool calls, Edit tool calls, file content you generated, code blocks you produced.
 
-- **YES — session context found:** Use it directly. List the files you touched, what you changed,
-  and why. Skip all git commands. This produces the richest output at zero extra token cost.
+- **YES — session context found:** Use it for the walkthrough (richer output, zero extra tokens).
+  But also run `git diff HEAD --name-only` to get the full list of new/modified files.
+  Scan ALL those files for security risks — hardcoded secrets, missing validation, dangerous patterns —
+  even files that weren't the focus of the session. Session context explains the why; git catches
+  everything the AI touched that could be dangerous.
 - **NO — cold start:** Run the appropriate git command from the table above.
   Only request `--name-only` first. Read full diff only for changed files — don't dump
   the entire repo diff if only 2 files changed.
