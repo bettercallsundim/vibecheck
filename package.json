@@ -1,0 +1,32 @@
+{
+  "name": "vibecheck-skill",
+  "version": "1.0.3",
+  "description": "Install the vibecheck skill for Claude Code, Cursor, Windsurf, Copilot, Codex CLI, and Antigravity",
+  "bin": {
+    "vibecheck": "./bin/install.js",
+    "vibecheck-skill": "./bin/install.js"
+  },
+  "files": [
+    "bin/",
+    "SKILL.md"
+  ],
+  "keywords": [
+    "claude-code",
+    "skill",
+    "cursor",
+    "windsurf",
+    "copilot",
+    "codex",
+    "ai",
+    "vibe-coding"
+  ],
+  "author": "bettercallsundim",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bettercallsundim/vibecheck.git"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}

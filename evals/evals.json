@@ -1,0 +1,53 @@
+{
+  "skill_name": "vibecheck",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/vibecheck — claude just added a stripe webhook handler to my express app, i accepted it but have no idea what it does",
+      "expected_output": "Sequential walkthrough covering: route registration order (before JSON parser), raw body requirement, signature verification, event routing, handlers. Must flag 🔴 HIGH risk on middleware order. Reference examples/stripe-webhook.md for ideal output.",
+      "files": ["examples/stripe-webhook.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "/vibecheck — codex just built out a full auth module (jwt login + refresh tokens). can you walk me through what it wrote so i actually understand it",
+      "expected_output": "Walkthrough in logical order: types → token generation → login route → auth middleware → refresh endpoint. Must explain WHY refresh token is stored in DB (revocation). Must flag cross-origin cookie risk. Reference examples/jwt-auth.md.",
+      "files": ["examples/jwt-auth.md"]
+    },
+    {
+      "id": 3,
+      "prompt": "vibecheck my last commit, i just fixed a bug where users were getting logged out randomly and i want to understand what the AI actually changed",
+      "expected_output": "Runs git show HEAD. Identifies changed files. Walkthrough: the broken logic, the specific fix, any related test or config. Should explain WHY the fix works, not just what line changed.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "/vibecheck main",
+      "expected_output": "Runs git diff main...HEAD. Treats entire branch as the diff. Produces walkthrough of all meaningful changes vs main, grouped logically. Does not dump every file — groups trivial changes.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "/vibecheck src/payments",
+      "expected_output": "Runs git diff HEAD -- src/payments. Scoped walkthrough of only that folder. Should note if changes in this folder have callers outside the scope.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "/vibecheck --quiz — claude just added a prisma migration and updated the user model",
+      "expected_output": "Walkthrough of migration + model changes first. Then 3 quiz questions specific to this diff: e.g. what does the migration actually do to the DB, what happens to existing rows, which queries might break. Scores answers inline.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "/vibecheck — AI changed a .env.example and added two new config values, that's all",
+      "expected_output": "Walks through config changes even though they're 'just env vars'. Explains what each var controls and what breaks if they're missing. No Steps section needed — short walkthrough is fine.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "/vibecheck — there's no git repo here, AI just generated 3 new files for me",
+      "expected_output": "Asks which files to walk through (no git available). Once user provides them, reads and produces normal walkthrough format based on file content and naming.",
+      "files": []
+    }
+  ]
+}
