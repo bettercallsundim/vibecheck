@@ -77,20 +77,21 @@ No API keys. No background service. No runtime dependencies.
 
 ## Usage
 
+AI just wrote code. You accepted it. Run:
+
 ```bash
-/vibecheck                  # uncommitted changes
-/vibecheck main             # current branch vs main
-/vibecheck src/auth         # only a file or folder
-/vibecheck --quiz           # walkthrough, then 3-question check
-/vibecheck main --quiz      # branch walkthrough plus quiz
+/vibecheck
 ```
 
-### When to run it
+That's the daily use case. Run it right after your agent finishes — you get a reading path, risk flags, and a clear picture of what changed before you move on.
 
-- After an AI agent edits multiple files
-- Before merging a branch you mostly generated with AI
-- When a diff touches auth, payments, database, jobs, env config, or permissions
-- When you accepted a fix but cannot explain why it works yet
+### Other modes
+
+```bash
+/vibecheck main        # review everything on this branch vs main before merging
+/vibecheck src/auth    # scope to a specific file or folder
+/vibecheck --quiz      # walkthrough + 3 questions to test your understanding
+```
 
 ---
 
