@@ -71,19 +71,6 @@ mkdir -p ~/.agents/skills/vibecheck && \
 
 Restart your AI coding tool after any install method.
 
-### Tool-specific paths
-
-Use the universal path above when possible. If your tool requires a dedicated skill folder, copy `SKILL.md` to one of these paths:
-
-| Tool | Skill path |
-|---|---|
-| Claude Code | `~/.claude/skills/vibecheck/SKILL.md` |
-| Cursor | `~/.cursor/skills/vibecheck/SKILL.md` |
-| Windsurf | `~/.codeium/windsurf/skills/vibecheck/SKILL.md` |
-| GitHub Copilot | `~/.copilot/skills/vibecheck/SKILL.md` |
-| Codex CLI | `~/.agents/skills/vibecheck/SKILL.md` |
-| Antigravity | `~/.gemini/config/skills/vibecheck/SKILL.md` |
-
 No API keys. No background service. No runtime dependencies.
 
 ---
