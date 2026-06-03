@@ -2,11 +2,11 @@
 
 > The missing handoff between AI coding agents and human understanding.
 
-![vibecheck hero image](./assets/readme-hero.png)
-
 `/vibecheck` turns fresh AI-written code into a short reading path: what changed, where to start, what matters, what could break, and how to prove you actually understood it.
 
 Use it right after Claude Code, Cursor, Windsurf, Copilot, Codex CLI, or another coding agent edits your repo.
+
+![vibecheck demo](./assets/demo.gif)
 
 [View landing page](https://bettercallsundim.github.io/vibecheck) · [Read examples](./examples) · [Contribute](./CONTRIBUTING.md)
 
@@ -30,14 +30,6 @@ AI coding tools can produce a 7-file feature before you have finished reading th
 - **Quiz mode** with 3 focused questions to check whether the change actually landed in your head
 
 ---
-
-## Example
-
-Your agent just changed six files. You saw green checkmarks. You still do not know what it actually did.
-
-Run `/vibecheck`:
-
-![vibecheck demo](./assets/demo.gif)
 
 ---
 
