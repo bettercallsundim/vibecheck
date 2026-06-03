@@ -35,11 +35,9 @@ AI coding tools can produce a 7-file feature before you have finished reading th
 
 Your agent just changed six files. You saw green checkmarks. You still do not know what it actually did.
 
-Run:
+Run `/vibecheck`:
 
-```bash
-/vibecheck
-```
+![vibecheck demo](./assets/demo.gif)
 
 ---
 
