@@ -18,7 +18,7 @@
 
 - Added: cross-tool support — Claude Code, Cursor, Windsurf, GitHub Copilot, Codex CLI, Antigravity
 - Added: universal install path `~/.agents/skills/` covers all tools
-- Added: `npx vibecheck-skill --global` installs to all tool-specific paths at once
+- Added: `npx vibecheck-code --global` installs to all tool-specific paths at once
 - Added: uninstall instructions
 - Fixed: install URL placeholder replaced with real GitHub username
 

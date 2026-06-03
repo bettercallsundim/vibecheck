@@ -24,7 +24,7 @@ const globalDestinations = [
 ]
 
 if (isVersion) {
-  console.log(`vibecheck-skill v${pkg.version}`)
+  console.log(`${pkg.name} v${pkg.version}`)
   process.exit(0)
 }
 
@@ -40,7 +40,7 @@ if (isUpdate) {
     res.on('end', () => {
       const installed = findInstalledPaths()
       if (installed.length === 0) {
-        console.error('✗ No installed vibecheck skills found. Run npx vibecheck-skill first.')
+        console.error(`✗ No installed vibecheck skills found. Run npx ${pkg.name} first.`)
         process.exit(1)
       }
       for (const dest of installed) {

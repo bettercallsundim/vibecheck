@@ -36,7 +36,7 @@ AI coding tools can produce a 7-file feature before you have finished reading th
 ### npx — per project (recommended)
 
 ```bash
-npx vibecheck-skill
+npx vibecheck-code
 ```
 
 Installs to `.agents/skills/vibecheck/SKILL.md` in your current project. Commit it to share the skill with your whole team.
@@ -44,7 +44,7 @@ Installs to `.agents/skills/vibecheck/SKILL.md` in your current project. Commit 
 ### npx — global (all tools on this machine)
 
 ```bash
-npx vibecheck-skill --global
+npx vibecheck-code --global
 ```
 
 Installs to all 6 tool-specific paths at once — Claude Code, Cursor, Windsurf, Copilot, Codex CLI, and Antigravity.
