@@ -9,7 +9,7 @@ description: >
   recent code or wants a tour of what an AI agent wrote.
 ---
 
-<!-- vibecheck:version:1.0.9 -->
+<!-- vibecheck:version:1.0.10 -->
 
 # VibeCheck
 
