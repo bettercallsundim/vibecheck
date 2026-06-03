@@ -2,6 +2,8 @@
 
 > The missing handoff between AI coding agents and human understanding.
 
+![vibecheck](./assets/readme-hero.png)
+
 `/vibecheck` turns fresh AI-written code into a short reading path: what changed, where to start, what matters, what could break, and how to prove you actually understood it.
 
 Use it right after Claude Code, Cursor, Windsurf, Copilot, Codex CLI, or another coding agent edits your repo.
