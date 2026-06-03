@@ -63,9 +63,9 @@ Default response is compact. Start immediately with:
 **What this does:** [2 sentences max]
 
 ### 📖 Read in this order
-1. **[Label]** [file:line](path#Lline)
+1. **[Label]** `path/to/file.ext:42`
    [1 sentence: what to notice and why] [risk tag if needed]
-2. **[Label]** [file:start-end](path#Lstart-Lend)
+2. **[Label]** `path/to/file.ext:87-102`
    [1 sentence]
 ```
 
@@ -102,7 +102,9 @@ Only flag real findings. Do not invent risks for completeness.
   grouped line for the rest.
 - Each step: one sentence unless the risk truly needs two.
 - Skip empty sections entirely.
-- Prefer file/line links over explanation paragraphs.
+- Prefer IDE-friendly `path:line` or `path:start-end` references over markdown
+  links. If an environment supports clickable markdown ranges, still keep the
+  visible text as `path:line` so Antigravity/Cursor-style file detection works.
 - If the user asks for more detail, expand only the requested step or section.
 
 ## Red Team (`--redteam`)
