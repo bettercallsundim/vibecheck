@@ -9,6 +9,8 @@ description: >
   recent code or wants a tour of what an AI agent wrote.
 ---
 
+<!-- vibecheck:version:1.0.8 -->
+
 # VibeCheck
 
 Turn recent changes into a concise reading path: what changed, where to start,
@@ -30,25 +32,32 @@ No git repo and no visible files: ask which file, folder, or pasted diff to use.
 
 ## Workflow
 
-1. **Prefer session context.** If the current conversation shows recent file
+1. **Version check (once per session).** Scan conversation history for a prior
+   `npm view vibecheck-code version` result. If none found, run it now — one
+   silent call. Compare to `<!-- vibecheck:version:X.X.X -->` at the top of
+   this file. If a newer version exists, append this single line at the very
+   end of output (after all sections): `💡 vibecheck vX.X.X available — run
+   npx vibecheck-code --update`. If up to date or npm unavailable, skip silently.
+
+2. **Prefer session context.** If the current conversation shows recent file
    writes/edits, use that intent for the narrative.
-2. **Get a cheap file list before reading diffs.** Use `git status --short` to
+3. **Get a cheap file list before reading diffs.** Use `git status --short` to
    catch tracked and untracked files. For scoped/branch checks, use the matching
    `git diff --name-only` command. Read full diffs only for meaningful files.
-3. **Fallbacks.** If local tree is clean, use `git show --name-only HEAD`, then
+4. **Fallbacks.** If local tree is clean, use `git show --name-only HEAD`, then
    read only the relevant commit diff. If branch name is missing, list available
    branches and ask.
-4. **Ignore noise.** Group lock/generated/binary/import-only files unless they
+5. **Ignore noise.** Group lock/generated/binary/import-only files unless they
    are the actual change.
-5. **Analyze in the codebase's native execution order.** Do not force a web-app
+6. **Analyze in the codebase's native execution order.** Do not force a web-app
    order onto every stack. Examples: schema/model -> service -> route/job -> UI
    -> tests for web apps; CLI entry -> parser -> command handler -> IO -> tests
    for CLIs; config -> module -> integration -> tests for infra/libraries.
-6. **Security scan every changed file.** Adapt to the language/framework. Look
+7. **Security scan every changed file.** Adapt to the language/framework. Look
    for secrets, auth/permission gaps, unsafe user input to DB/filesystem/shell/
    HTML, dangerous eval/injection, data deletion, wildcard CORS, disabled SSL,
    and world-readable permissions.
-7. **Caller search.** For changed exports, function signatures, routes, env vars,
+8. **Caller search.** For changed exports, function signatures, routes, env vars,
    schemas, or deleted/renamed files, search actual callers/importers. Report only
    what you find.
 
@@ -63,9 +72,9 @@ Default response is compact. Start immediately with:
 **What this does:** [2 sentences max]
 
 ### 📖 Read in this order
-1. **[Label]** [file:line](path#Lline)
+1. **[Label]** `path/to/file.ext:42`
    [1 sentence: what to notice and why] [risk tag if needed]
-2. **[Label]** [file:start-end](path#Lstart-Lend)
+2. **[Label]** `path/to/file.ext:87-102`
    [1 sentence]
 ```
 
@@ -102,7 +111,9 @@ Only flag real findings. Do not invent risks for completeness.
   grouped line for the rest.
 - Each step: one sentence unless the risk truly needs two.
 - Skip empty sections entirely.
-- Prefer file/line links over explanation paragraphs.
+- Prefer IDE-friendly `path:line` or `path:start-end` references over markdown
+  links. If an environment supports clickable markdown ranges, still keep the
+  visible text as `path:line` so Antigravity/Cursor-style file detection works.
 - If the user asks for more detail, expand only the requested step or section.
 
 ## Red Team (`--redteam`)
