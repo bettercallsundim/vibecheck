@@ -2,13 +2,11 @@
 
 > The missing handoff between AI coding agents and human understanding.
 
-![vibecheck](./assets/readme-hero.png)
+![vibecheck](https://raw.githubusercontent.com/bettercallsundim/vibecheck/main/assets/readme-hero.png)
 
 `/vibecheck` turns fresh AI-written code into a short reading path: what changed, where to start, what matters, what could break, and how to prove you actually understood it.
 
 Use it right after Claude Code, Cursor, Windsurf, Copilot, Codex CLI, or another coding agent edits your repo.
-
-![vibecheck demo](./assets/demo.gif)
 
 [View landing page](https://bettercallsundim.github.io/vibecheck) · [Read examples](./examples) · [Contribute](./CONTRIBUTING.md)
 

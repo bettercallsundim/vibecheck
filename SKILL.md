@@ -1,240 +1,143 @@
 ---
 name: vibecheck
 description: >
-  Use this skill when the user runs /vibecheck or asks to understand recent code changes,
-  a new feature they just built, a bug fix they just accepted from AI, or anything like
-  "walk me through what just changed", "explain this diff", "what did the AI write",
-  "help me understand this PR", "vibecheck my code", or "what does this new module do".
-  This skill is for vibe coders — developers who use AI coding tools but want to actually
-  understand the code they just accepted. It analyzes git diffs and produces a sequential,
-  clickable, plain-English walkthrough of exactly what changed and how to read it.
-  Trigger proactively whenever the user seems confused about recent code or wants a tour
-  of what an AI agent just wrote for them.
+  Use when the user runs /vibecheck or asks to understand recent code changes:
+  "walk me through what changed", "explain this diff", "what did the AI write",
+  "help me understand this PR", or "vibecheck my code". Produce a short,
+  clickable reading path for AI-written or recently accepted code, with real
+  risks and next checks. Trigger proactively when the user seems confused about
+  recent code or wants a tour of what an AI agent wrote.
 ---
 
 # VibeCheck
 
-Turn recent code changes into a sequential, clickable walkthrough. Goal: dev understands
-what changed and why in under 5 minutes.
+Turn recent changes into a concise reading path: what changed, where to start,
+what matters, what could break, and how to verify understanding.
 
-## Arguments
+## Invocation
 
-Parse the invocation before doing anything:
+Parse flags first:
 
-| Invocation | What to diff |
+| Invocation | Scope |
 |---|---|
-| `/vibecheck` | `git diff HEAD` → if empty: `git show HEAD` |
-| `/vibecheck main` | `git diff main...HEAD` |
-| `/vibecheck src/auth` | `git diff HEAD -- src/auth` (scoped to path) |
-| `/vibecheck --quiz` | Normal walkthrough, then quiz mode |
-| `/vibecheck main --quiz` | Branch diff + quiz |
-| `/vibecheck src/auth --quiz` | Scoped diff + quiz |
-| `/vibecheck --redteam` | Normal walkthrough, then adversarial attack analysis |
+| `/vibecheck` | local tracked + untracked changes; if clean, `git show HEAD` |
+| `/vibecheck main` | branch diff: `git diff main...HEAD` |
+| `/vibecheck path/to/file` | local diff scoped to path |
+| `--quiz` | add 3-question comprehension check |
+| `--redteam` | add adversarial attack-surface review |
 
-No git repo / clean tree → ask: "Which file or folder should I walk you through?"
+No git repo and no visible files: ask which file, folder, or pasted diff to use.
 
-## Step 1 — Get the diff
+## Workflow
 
-**Before anything else: scan the current conversation history.**
-Look for your own recent Write/Edit tool calls. Extract the list of files you created or modified.
+1. **Prefer session context.** If the current conversation shows recent file
+   writes/edits, use that intent for the narrative.
+2. **Get a cheap file list before reading diffs.** Use `git status --short` to
+   catch tracked and untracked files. For scoped/branch checks, use the matching
+   `git diff --name-only` command. Read full diffs only for meaningful files.
+3. **Fallbacks.** If local tree is clean, use `git show --name-only HEAD`, then
+   read only the relevant commit diff. If branch name is missing, list available
+   branches and ask.
+4. **Ignore noise.** Group lock/generated/binary/import-only files unless they
+   are the actual change.
+5. **Analyze in execution order.** Prefer schema/model -> service -> route/job ->
+   UI -> tests, not filesystem order.
+6. **Security scan every changed file.** Look for secrets, auth/permission gaps,
+   unsafe user input to DB/filesystem/shell/HTML, dangerous eval/injection, data
+   deletion, wildcard CORS, disabled SSL, and world-readable permissions.
+7. **Caller search.** For changed exports, function signatures, routes, env vars,
+   schemas, or deleted/renamed files, search actual callers/importers. Report only
+   what you find.
 
-- **YES — session context found:** Use session context for the walkthrough narrative (you know
-  the intent behind the change). Then run `git diff HEAD --name-only` to get the complete list
-  of modified files — use it only to catch files you touched but didn't explicitly mention, and
-  to run the security scan (Step 2b). If git and session context disagree on what changed
-  (e.g. user also manually edited a file), trust git — it reflects the actual state on disk.
-- **NO — cold start:** Run `git diff HEAD`. If empty, run `git show HEAD`.
-  Get `--name-only` first. Read full diff only for the changed files — don't dump the entire
-  repo diff.
+## Output
 
-## Step 2a — Analyze before writing
+Default response is compact. Start immediately with:
 
-Identify:
-- Purpose (new feature / bug fix / refactor / config)
-- Entry point (where execution or reading starts)
-- Logical reading order (schema → model → service → route → test — not filesystem order)
-- Strip before analyzing: merge commit noise, rebase artifacts, conflict markers, lock file
-  changes, auto-generated files — these waste reader attention
+```md
+### 🔍 VibeCheck: [one-line summary]
 
-## Step 2b — Security scan (always run, even with session context)
+**Context:** [Session intent | Git diff | Last commit]
+**What this does:** [2 sentences max]
 
-For every new or modified file, scan for security risks. Adapt to the language in the diff — don't apply JS patterns to Python code. Look for:
+### 📖 Read in this order
+1. **[Label]** [file:line](path#Lline)
+   [1 sentence: what to notice and why] [risk tag if needed]
+2. **[Label]** [file:start-end](path#Lstart-Lend)
+   [1 sentence]
+```
 
-- Hardcoded credentials or secrets anywhere in the file
-- Dangerous eval/injection patterns for the language in use
-- User input reaching sensitive operations without validation (DB, filesystem, shell, HTML output)
-- Missing auth guards on routes or handlers that touch user data
-- Overly permissive config (wildcard CORS, disabled SSL checks, world-readable permissions)
+Then add only sections that have real content:
 
-Flag anything found as 🔴 HIGH in ⚠️ Risks, with exact file and line.
-
-## Step 2c — Caller search for "What could break"
-
-Don't guess. Search the codebase for callers of any changed exports or function signatures.
-Only report what you actually find — never hypothetical callers.
-
-## Step 3 — Output
-
-**Default output** — lean. No filler. Every word earns its place.
-
----
-
-### 🔍 VibeCheck: [one-line description]
-
-🤖 **Context:** [Session — AI wrote this code, intent is clear] OR [Git diff — cold start, verify intent yourself]
-
-**What this does:** [2-3 sentences max. Plain English. What problem does it solve?]
-
----
-
-### 📖 Read it in this order:
-
-**1 — [Label]** [path/to/file.ts:42-55](path/to/file.ts#L42-L55)
-> [1-2 sentences: what to notice and why] [🔴 HIGH / 🟡 MEDIUM risk tag if applicable]
-
-**2 — [Label]** [path/to/file.ts:87-102](path/to/file.ts#L87-L102)
-> [1-2 sentences]
-
-... (4–8 steps. Group trivial files: "these 3 files just update imports — skip them.")
-
-Line ranges: use the actual start+end of the relevant block (function body, class, if-block).
-Link format: [filename.ts:start-end](relative/path/from/project/root/filename.ts#Lstart-Lend)
-Single line fallback (no obvious block end): [filename.ts:42](path/to/file.ts#L42)
-
----
-
+```md
 ### ⚠️ Risks
-[Only include if risks found. Bullet list, max 5. Skip entire section if nothing real.]
-- 🔴 [specific risk + file:line]
-- 🟡 [specific risk + file:line]
+- 🔴/🟡 [specific risk + file:line]
 
----
+### 💥 What Could Break
+- [actual caller/importer/test found by search]
 
-### 💥 What could break
-[Only callers/importers you found via search. Max 3 bullets. Skip if you found nothing.]
-- `path/to/caller.ts` — imports X which changed, may need update
-- `path/to/test.ts` — test exists but doesn't cover the new branch
+### ✅ Before You Merge
+- [ ] [specific verification from this diff]
 
----
+### ❓ Go Deeper
+- [max 2 useful follow-up prompts]
+```
 
-### ✅ Before you merge
-[Derive from this specific diff. Concrete, actionable items — not generic advice. Skip if nothing specific applies.]
-- [ ] [specific thing to verify, e.g. "STRIPE_WEBHOOK_SECRET is set in production"]
-- [ ] [specific thing to test, e.g. "middleware order in app.ts hasn't changed"]
+## Risk Tags
 
----
+- 🔴 HIGH: auth/security logic, secrets, data deletion, unsafe user input,
+  privilege/permission changes, production-breaking config.
+- 🟡 MEDIUM: missing tests for new logic, hardcoded values, breaking exported API,
+  risky migration/config, caller not updated.
+- No tag for routine low-risk changes.
 
-### ❓ Go deeper
-[2 follow-up prompts max. Only ones actually useful given this specific diff.]
+Only flag real findings. Do not invent risks for completeness.
 
----
+## Token Budget
 
-## Risk tagging rules
+- Never paste raw diffs.
+- Default: 3-6 reading steps. For >500 changed lines, use 4-8 key stops and one
+  grouped line for the rest.
+- Each step: one sentence unless the risk truly needs two.
+- Skip empty sections entirely.
+- Prefer file/line links over explanation paragraphs.
+- If the user asks for more detail, expand only the requested step or section.
 
-- 🔴 **HIGH** — auth/security logic changed, secrets detected, data deletion, no input validation on user-facing input
-- 🟡 **MEDIUM** — no tests for new logic, hardcoded value, breaking change to exported API
-- (no tag) — everything looks fine, skip
+## Red Team (`--redteam`)
 
-Only flag real issues. Don't cry wolf on routine changes.
+After the normal walkthrough, add:
 
-## Token rules (enforce these)
-
-- Never repeat the raw diff in output
-- Steps: 1-2 sentences each, hard limit
-- "What could break": only callers found via actual search
-- "Go deeper": max 2 prompts
-- If diff is >500 lines: focus on 6-8 most important stops, group the rest in one line
-- No preamble — start with the `### 🔍 VibeCheck:` line
-
-## Red team mode (`--redteam`)
-
-After the normal walkthrough, switch posture to adversarial. Assume the role of an attacker
-or a senior engineer looking for reasons to reject this PR. Ask: "How would I exploit this?"
-
-Add after the walkthrough:
-
----
-
+```md
 ### 🔴 Red Team
+**Attack surface:** [new trust boundary or exposure]
+**Exploitation scenarios:** [max 3 realistic scenarios tied to lines]
+**What the walkthrough missed:** [only if something real]
+**Hardening suggestions:** [max 2 concrete fixes]
+```
 
-**Attack surface:** [What new attack surface does this diff introduce?]
+Rules: realistic only, line-tied, direct technical tone. If nothing exploitable is
+visible, say so plainly.
 
-**Exploitation scenarios:**
-- [Specific, realistic attack — not generic. Tie it to actual lines in the diff.]
-- [Another scenario if applicable. Max 3.]
+## Quiz (`--quiz`)
 
-**What the walkthrough missed:** [Any risk the standard vibecheck didn't flag — gaps in
-validation, trust boundaries, timing issues, state corruption, privilege escalation.]
+After the walkthrough, ask 3 questions and wait:
 
-**Hardening suggestions:**
-- [Concrete fix for the highest-severity finding]
-- [One more if applicable]
+1. Comprehension: what changed and why?
+2. Gotcha: risk, edge case, or non-obvious behavior in this diff.
+3. Connection: relation to another caller/module, or an edge case if no real
+   connection is visible.
 
----
+Score inline: correct, close with one clarification, or wrong with a two-sentence
+answer. End with `X/3`; no long recap.
 
-Rules for red team mode:
-- Only flag realistic attack vectors — not theoretical or CVE-of-the-week scaremongering
-- Tie every finding to a specific file and line
-- If there's genuinely nothing exploitable, say so — don't invent risks to seem thorough
-- Tone: direct, technical, no drama
+## Edge Cases
 
----
-
-## Quiz mode (`--quiz`)
-
-After the walkthrough, add:
-
----
-
-### 🧠 Quick check — did it land?
-
-Difficulty curve — always follow this order:
-**Q1:** Comprehension — "What does X do and why?" (straightforward, tests basic understanding)
-**Q2:** Gotcha — a risk, edge case, or non-obvious behavior specific to this diff
-**Q3:** Connection — how this change relates to another part of the codebase. If you can't
-identify a real connection, replace with: a question about an edge case or failure mode in the diff.
-
-Wait for answers. Score inline:
-- Correct → "✅ Exactly."
-- Partially right → "🟡 Close — [one sentence clarification]"
-- Wrong → "❌ [correct answer in 2 sentences max]"
-
-Final score: **X/3** — no lengthy recap.
-
----
-
-## Edge cases
-
-**Config-only diff:** Still walk through it. Env vars and schema changes are what AI writes
-that devs ignore and get burned by later.
-
-**Test files only:** Walk tests as spec — what behavior they verify is often more useful
-than the implementation.
-
-**Huge diff (>500 lines):** Ask "Full feature walkthrough or just the hottest changes?"
-Then scope accordingly — don't produce a 30-step essay.
-
-**Merge commit / rebase noise:** Strip merge commits, conflict resolution markers, and
-rebase artifacts before analyzing. They're not meaningful to the reader.
-
-**Branch name doesn't exist** (e.g. `/vibecheck main` but no `main` branch): Say:
-"No branch named `main` found. Available branches: [list them]. Which one?"
-
-**Binary files in diff:** Note and skip. "X also changed binary files — skipped."
-
-**Generated or lock files** (package-lock.json, yarn.lock, *.min.js, *.pb.go):
-Group in one line: "Lock/generated files updated — skip these."
-
-**Deleted files:** Flag explicitly. Explain what it did and grep for callers.
-🟡 MEDIUM if callers still exist.
-
-**Renamed files:** One step noting old and new path. Only walk content if it changed
-beyond the rename.
-
-**Monorepo:** Group steps by app/package. Don't intermix `apps/web` and `packages/api`.
-
-**No git repo, files visible in conversation:** Use session context directly.
-
-**`git` binary not installed:** Don't error silently. Say: "git isn't available in this environment. Which file or folder should I walk you through? Or paste a diff directly."
-
-**User asks "explain what changed" without `/vibecheck`:** Treat as `/vibecheck`.
+- Config-only: explain what each var/config changes and what breaks if missing.
+- Tests-only: read tests as the behavioral spec.
+- Huge diff: ask whether to cover full feature or hottest changes.
+- Merge/rebase noise: strip conflict markers and mechanical churn.
+- Deleted files: explain deletion and search callers; 🟡 if callers remain.
+- Renamed files: note old -> new; inspect content only if it changed.
+- Monorepo: group by app/package.
+- No git but files visible in conversation: use session context.
+- `git` missing: ask for file/folder or pasted diff.
+- User asks "explain what changed": treat as `/vibecheck`.
