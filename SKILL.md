@@ -23,7 +23,7 @@ Parse the invocation before doing anything:
 
 | Invocation | What to diff |
 |---|---|
-| `/vibecheck` | `git diff HEAD` (uncommitted) → fallback: `git diff --cached` → fallback: `git show HEAD` |
+| `/vibecheck` | `git diff HEAD` → if empty: `git show HEAD` |
 | `/vibecheck main` | `git diff main...HEAD` |
 | `/vibecheck src/auth` | `git diff HEAD -- src/auth` (scoped to path) |
 | `/vibecheck --quiz` | Normal walkthrough, then quiz mode |
@@ -32,31 +32,51 @@ Parse the invocation before doing anything:
 
 No git repo / clean tree → ask: "Which file or folder should I walk you through?"
 
-## Step 1 — Get the diff (token-efficient)
+## Step 1 — Get the diff
 
 **Before anything else: scan the current conversation history.**
-Look back at this session. Did you (the AI) write, edit, or create any files in this conversation?
-Check for: Write tool calls, Edit tool calls, file content you generated, code blocks you produced.
+Look for your own recent Write/Edit tool calls. Extract the list of files you created or modified.
 
-- **YES — session context found:** Use it for the walkthrough (richer output, zero extra tokens).
-  But also run `git diff HEAD --name-only` to get the full list of new/modified files.
-  Scan ALL those files for security risks — hardcoded secrets, missing validation, dangerous patterns —
-  even files that weren't the focus of the session. Session context explains the why; git catches
-  everything the AI touched that could be dangerous.
-- **NO — cold start:** Run the appropriate git command from the table above.
-  Only request `--name-only` first. Read full diff only for changed files — don't dump
-  the entire repo diff if only 2 files changed.
+- **YES — session context found:** Use session context for the walkthrough narrative (you know
+  the intent behind the change). Then run `git diff HEAD --name-only` to get the complete list
+  of modified files — use it only to catch files you touched but didn't explicitly mention, and
+  to run the security scan (Step 2b). If git and session context disagree on what changed
+  (e.g. user also manually edited a file), trust git — it reflects the actual state on disk.
+- **NO — cold start:** Run `git diff HEAD`. If empty, run `git show HEAD`.
+  Get `--name-only` first. Read full diff only for the changed files — don't dump the entire
+  repo diff.
 
-## Step 2 — Analyze before writing
+## Step 2a — Analyze before writing
 
 Identify:
 - Purpose (new feature / bug fix / refactor / config)
 - Entry point (where execution or reading starts)
 - Logical reading order (schema → model → service → route → test — not filesystem order)
-- Risks: missing error handling, auth/security logic touched, no tests for new logic,
-  hardcoded secrets/values, breaking API changes
+- Strip before analyzing: merge commit noise, rebase artifacts, conflict markers, lock file
+  changes, auto-generated files — these waste reader attention
 
-## Step 3 — Output (keep it tight)
+## Step 2b — Security scan (always run, even with session context)
+
+For every new or modified file, scan for these patterns:
+
+- Hardcoded secrets: `password =`, `secret =`, `apiKey =`, `token =`, `API_KEY =`
+- Dangerous functions: `eval(`, `innerHTML`, `dangerouslySetInnerHTML`
+- SQL injection: string interpolation inside queries
+- `CORS *` wildcard origin
+- Missing auth middleware on routes that handle user data
+- Command injection: user input passed to `exec(`, `spawn(`, `system(`
+- Unvalidated user input reaching database or filesystem
+
+Flag anything found as 🔴 HIGH in the ⚠️ Risks section, with the exact file and line.
+
+## Step 2c — Caller search for "What could break"
+
+Don't guess. Before writing the "What could break" section:
+- Grep/search for importers of any changed exports: `import { X }`, `require('path/to/file')`
+- Grep for any changed function names used elsewhere in the codebase
+- Only report callers you can actually find — never hypothetical ones
+
+## Step 3 — Output
 
 **Default output** — lean. No filler. Every word earns its place.
 
@@ -86,41 +106,46 @@ Single line fallback (no obvious block end): [filename.ts:42](path/to/file.ts#L4
 
 ### ⚠️ Risks
 [Only include if risks found. Bullet list, max 5. Skip entire section if nothing real.]
-- 🔴 [specific risk + which line]
-- 🟡 [specific risk + which line]
+- 🔴 [specific risk + file:line]
+- 🟡 [specific risk + file:line]
 
 ---
 
 ### 💥 What could break
-[Only include if you can identify actual cross-file impact. Max 3 bullets. Skip if speculative.]
-- `path/to/caller.ts` — calls the function that changed, may need update
+[Only callers/importers you found via search. Max 3 bullets. Skip if you found nothing.]
+- `path/to/caller.ts` — imports X which changed, may need update
 - `path/to/test.ts` — test exists but doesn't cover the new branch
 
 ---
 
+### ✅ Before you merge
+[Derive from this specific diff. Concrete, actionable items — not generic advice. Skip if nothing specific applies.]
+- [ ] [specific thing to verify, e.g. "STRIPE_WEBHOOK_SECRET is set in production"]
+- [ ] [specific thing to test, e.g. "middleware order in app.ts hasn't changed"]
+
+---
+
 ### ❓ Go deeper
-[2 follow-up prompts max. Only ones that are actually useful given this specific diff.]
+[2 follow-up prompts max. Only ones actually useful given this specific diff.]
 
 ---
 
 ## Risk tagging rules
 
-Tag inline on the step, not in a separate section:
-
 - 🔴 **HIGH** — auth/security logic changed, secrets detected, data deletion, no input validation on user-facing input
 - 🟡 **MEDIUM** — no tests for new logic, hardcoded value, breaking change to exported API
 - (no tag) — everything looks fine, skip
 
-Only flag real issues. Don't cry wolf on routine changes — it trains devs to ignore the tags.
+Only flag real issues. Don't cry wolf on routine changes.
 
 ## Token rules (enforce these)
 
 - Never repeat the raw diff in output
 - Steps: 1-2 sentences each, hard limit
-- "What could break": only real cross-file callers/importers you can identify — not hypotheticals
+- "What could break": only callers found via actual search
 - "Go deeper": max 2 prompts
-- If diff is >500 lines: focus on the 6-8 most important stops, group the rest in one line
-- No preamble ("Sure! Let me walk you through...") — start with the `### 🔍 VibeCheck:` line
+- If diff is >500 lines: focus on 6-8 most important stops, group the rest in one line
+- No preamble — start with the `### 🔍 VibeCheck:` line
 
 ## Quiz mode (`--quiz`)
 
@@ -130,9 +155,11 @@ After the walkthrough, add:
 
 ### 🧠 Quick check — did it land?
 
-**Q1:** [Conceptual question about the core change — tests understanding, not recall]
-**Q2:** [Question about a risk or gotcha from this specific diff]
-**Q3:** [Question about how this connects to the rest of the codebase]
+Difficulty curve — always follow this order:
+**Q1:** Comprehension — "What does X do and why?" (straightforward, tests basic understanding)
+**Q2:** Gotcha — a risk, edge case, or non-obvious behavior specific to this diff
+**Q3:** Connection — how this change relates to another part of the codebase. If you can't
+identify a real connection, replace with: a question about an edge case or failure mode in the diff.
 
 Wait for answers. Score inline:
 - Correct → "✅ Exactly."
@@ -154,30 +181,25 @@ than the implementation.
 **Huge diff (>500 lines):** Ask "Full feature walkthrough or just the hottest changes?"
 Then scope accordingly — don't produce a 30-step essay.
 
-**Staged + unstaged changes both present:** Run `git diff HEAD` to catch everything — don't
-split the walkthrough into two passes. Note if some changes are staged and some aren't.
+**Merge commit / rebase noise:** Strip merge commits, conflict resolution markers, and
+rebase artifacts before analyzing. They're not meaningful to the reader.
 
-**Branch name doesn't exist** (e.g. `/vibecheck main` but no `main` branch): Don't error
-silently. Say: "No branch named `main` found. Available branches: [list them]. Which one?"
+**Branch name doesn't exist** (e.g. `/vibecheck main` but no `main` branch): Say:
+"No branch named `main` found. Available branches: [list them]. Which one?"
 
-**Binary files in diff:** Skip them in the walkthrough. Note: "X also changed binary files
-(images/fonts/compiled assets) — skipped, nothing to walk through there."
+**Binary files in diff:** Note and skip. "X also changed binary files — skipped."
 
-**Generated or lock files** (package-lock.json, yarn.lock, *.min.js, *.pb.go, migrations
-auto-generated): Group in one line: "Lock/generated files updated — skip these." Don't walk
-through them step by step.
+**Generated or lock files** (package-lock.json, yarn.lock, *.min.js, *.pb.go):
+Group in one line: "Lock/generated files updated — skip these."
 
-**Deleted files:** Flag explicitly. "X was deleted" is meaningful — explain what it did and
-whether anything still imports/calls it. 🟡 MEDIUM if callers exist.
+**Deleted files:** Flag explicitly. Explain what it did and grep for callers.
+🟡 MEDIUM if callers still exist.
 
-**Renamed files:** Treat as "moved, not rewritten" — one step noting old and new path. Only
-walk the content if it actually changed beyond the rename.
+**Renamed files:** One step noting old and new path. Only walk content if it changed
+beyond the rename.
 
-**Monorepo (multiple apps/packages changed):** Group steps by app/package. Don't intermix
-`apps/web` and `packages/api` changes — readers lose track of which system they're in.
+**Monorepo:** Group steps by app/package. Don't intermix `apps/web` and `packages/api`.
 
-**No git repo, but files visible in conversation:** Use session context directly. Walk the
-files that were shared or written — no git needed.
+**No git repo, files visible in conversation:** Use session context directly.
 
-**User asks "explain what changed" without typing `/vibecheck`:** Treat it as `/vibecheck`.
-The skill description covers this — just run the normal flow.
+**User asks "explain what changed" without `/vibecheck`:** Treat as `/vibecheck`.
