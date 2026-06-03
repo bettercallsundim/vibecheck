@@ -29,6 +29,7 @@ Parse the invocation before doing anything:
 | `/vibecheck --quiz` | Normal walkthrough, then quiz mode |
 | `/vibecheck main --quiz` | Branch diff + quiz |
 | `/vibecheck src/auth --quiz` | Scoped diff + quiz |
+| `/vibecheck --redteam` | Normal walkthrough, then adversarial attack analysis |
 
 No git repo / clean tree → ask: "Which file or folder should I walk you through?"
 
@@ -79,6 +80,8 @@ Only report what you actually find — never hypothetical callers.
 ---
 
 ### 🔍 VibeCheck: [one-line description]
+
+🤖 **Context:** [Session — AI wrote this code, intent is clear] OR [Git diff — cold start, verify intent yourself]
 
 **What this does:** [2-3 sentences max. Plain English. What problem does it solve?]
 
@@ -143,6 +146,40 @@ Only flag real issues. Don't cry wolf on routine changes.
 - If diff is >500 lines: focus on 6-8 most important stops, group the rest in one line
 - No preamble — start with the `### 🔍 VibeCheck:` line
 
+## Red team mode (`--redteam`)
+
+After the normal walkthrough, switch posture to adversarial. Assume the role of an attacker
+or a senior engineer looking for reasons to reject this PR. Ask: "How would I exploit this?"
+
+Add after the walkthrough:
+
+---
+
+### 🔴 Red Team
+
+**Attack surface:** [What new attack surface does this diff introduce?]
+
+**Exploitation scenarios:**
+- [Specific, realistic attack — not generic. Tie it to actual lines in the diff.]
+- [Another scenario if applicable. Max 3.]
+
+**What the walkthrough missed:** [Any risk the standard vibecheck didn't flag — gaps in
+validation, trust boundaries, timing issues, state corruption, privilege escalation.]
+
+**Hardening suggestions:**
+- [Concrete fix for the highest-severity finding]
+- [One more if applicable]
+
+---
+
+Rules for red team mode:
+- Only flag realistic attack vectors — not theoretical or CVE-of-the-week scaremongering
+- Tie every finding to a specific file and line
+- If there's genuinely nothing exploitable, say so — don't invent risks to seem thorough
+- Tone: direct, technical, no drama
+
+---
+
 ## Quiz mode (`--quiz`)
 
 After the walkthrough, add:
@@ -197,5 +234,7 @@ beyond the rename.
 **Monorepo:** Group steps by app/package. Don't intermix `apps/web` and `packages/api`.
 
 **No git repo, files visible in conversation:** Use session context directly.
+
+**`git` binary not installed:** Don't error silently. Say: "git isn't available in this environment. Which file or folder should I walk you through? Or paste a diff directly."
 
 **User asks "explain what changed" without `/vibecheck`:** Treat as `/vibecheck`.

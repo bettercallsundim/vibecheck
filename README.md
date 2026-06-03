@@ -33,8 +33,6 @@ AI coding tools can produce a 7-file feature before you have finished reading th
 
 ---
 
----
-
 ## Install
 
 ### npx — per project (recommended)
@@ -75,6 +73,7 @@ That's the daily use case. Run it right after your agent finishes — you get a 
 /vibecheck main        # review everything on this branch vs main before merging
 /vibecheck src/auth    # scope to a specific file or folder
 /vibecheck --quiz      # walkthrough + 3 questions to test your understanding
+/vibecheck --redteam   # walkthrough + adversarial attack surface analysis
 ```
 
 ---
