@@ -9,7 +9,7 @@ description: >
   recent code or wants a tour of what an AI agent wrote.
 ---
 
-<!-- vibecheck:version:1.0.8 -->
+<!-- vibecheck:version:1.0.9 -->
 
 # VibeCheck
 
@@ -20,13 +20,13 @@ what matters, what could break, and how to verify understanding.
 
 Parse flags first:
 
-| Invocation | Scope |
-|---|---|
-| `/vibecheck` | local tracked + untracked changes; if clean, `git show HEAD` |
-| `/vibecheck main` | branch diff: `git diff main...HEAD` |
-| `/vibecheck path/to/file` | local diff scoped to path |
-| `--quiz` | add 3-question comprehension check |
-| `--redteam` | add adversarial attack-surface review |
+| Invocation                | Scope                                                        |
+| ------------------------- | ------------------------------------------------------------ |
+| `/vibecheck`              | local tracked + untracked changes; if clean, `git show HEAD` |
+| `/vibecheck main`         | branch diff: `git diff main...HEAD`                          |
+| `/vibecheck path/to/file` | local diff scoped to path                                    |
+| `--quiz`                  | add 3-question comprehension check                           |
+| `--redteam`               | add adversarial attack-surface review                        |
 
 No git repo and no visible files: ask which file, folder, or pasted diff to use.
 
@@ -37,7 +37,7 @@ No git repo and no visible files: ask which file, folder, or pasted diff to use.
    silent call. Compare to `<!-- vibecheck:version:X.X.X -->` at the top of
    this file. If a newer version exists, append this single line at the very
    end of output (after all sections): `💡 vibecheck vX.X.X available — run
-   npx vibecheck-code --update`. If up to date or npm unavailable, skip silently.
+npx vibecheck-code --update`. If up to date or npm unavailable, skip silently.
 
 2. **Prefer session context.** If the current conversation shows recent file
    writes/edits, use that intent for the narrative.
@@ -72,6 +72,7 @@ Default response is compact. Start immediately with:
 **What this does:** [2 sentences max]
 
 ### 📖 Read in this order
+
 1. **[Label]** `path/to/file.ext:42`
    [1 sentence: what to notice and why] [risk tag if needed]
 2. **[Label]** `path/to/file.ext:87-102`
@@ -82,15 +83,19 @@ Then add only sections that have real content:
 
 ```md
 ### ⚠️ Risks
+
 - 🔴/🟡 [specific risk + file:line]
 
 ### 💥 What Could Break
+
 - [actual caller/importer/test found by search]
 
 ### ✅ Before You Merge
+
 - [ ] [specific verification from this diff]
 
 ### ❓ Go Deeper
+
 - [max 2 useful follow-up prompts]
 ```
 
@@ -122,6 +127,7 @@ After the normal walkthrough, add:
 
 ```md
 ### 🔴 Red Team
+
 **Attack surface:** [new trust boundary or exposure]
 **Exploitation scenarios:** [max 3 realistic scenarios tied to lines]
 **What the walkthrough missed:** [only if something real]
