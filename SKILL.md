@@ -57,24 +57,20 @@ Identify:
 
 ## Step 2b — Security scan (always run, even with session context)
 
-For every new or modified file, scan for these patterns:
+For every new or modified file, scan for security risks. Adapt to the language in the diff — don't apply JS patterns to Python code. Look for:
 
-- Hardcoded secrets: `password =`, `secret =`, `apiKey =`, `token =`, `API_KEY =`
-- Dangerous functions: `eval(`, `innerHTML`, `dangerouslySetInnerHTML`
-- SQL injection: string interpolation inside queries
-- `CORS *` wildcard origin
-- Missing auth middleware on routes that handle user data
-- Command injection: user input passed to `exec(`, `spawn(`, `system(`
-- Unvalidated user input reaching database or filesystem
+- Hardcoded credentials or secrets anywhere in the file
+- Dangerous eval/injection patterns for the language in use
+- User input reaching sensitive operations without validation (DB, filesystem, shell, HTML output)
+- Missing auth guards on routes or handlers that touch user data
+- Overly permissive config (wildcard CORS, disabled SSL checks, world-readable permissions)
 
-Flag anything found as 🔴 HIGH in the ⚠️ Risks section, with the exact file and line.
+Flag anything found as 🔴 HIGH in ⚠️ Risks, with exact file and line.
 
 ## Step 2c — Caller search for "What could break"
 
-Don't guess. Before writing the "What could break" section:
-- Grep/search for importers of any changed exports: `import { X }`, `require('path/to/file')`
-- Grep for any changed function names used elsewhere in the codebase
-- Only report callers you can actually find — never hypothetical ones
+Don't guess. Search the codebase for callers of any changed exports or function signatures.
+Only report what you actually find — never hypothetical callers.
 
 ## Step 3 — Output
 
