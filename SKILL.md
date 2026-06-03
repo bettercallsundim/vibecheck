@@ -40,11 +40,14 @@ No git repo and no visible files: ask which file, folder, or pasted diff to use.
    branches and ask.
 4. **Ignore noise.** Group lock/generated/binary/import-only files unless they
    are the actual change.
-5. **Analyze in execution order.** Prefer schema/model -> service -> route/job ->
-   UI -> tests, not filesystem order.
-6. **Security scan every changed file.** Look for secrets, auth/permission gaps,
-   unsafe user input to DB/filesystem/shell/HTML, dangerous eval/injection, data
-   deletion, wildcard CORS, disabled SSL, and world-readable permissions.
+5. **Analyze in the codebase's native execution order.** Do not force a web-app
+   order onto every stack. Examples: schema/model -> service -> route/job -> UI
+   -> tests for web apps; CLI entry -> parser -> command handler -> IO -> tests
+   for CLIs; config -> module -> integration -> tests for infra/libraries.
+6. **Security scan every changed file.** Adapt to the language/framework. Look
+   for secrets, auth/permission gaps, unsafe user input to DB/filesystem/shell/
+   HTML, dangerous eval/injection, data deletion, wildcard CORS, disabled SSL,
+   and world-readable permissions.
 7. **Caller search.** For changed exports, function signatures, routes, env vars,
    schemas, or deleted/renamed files, search actual callers/importers. Report only
    what you find.
