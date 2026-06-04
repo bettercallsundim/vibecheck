@@ -9,7 +9,7 @@ description: >
   recent code or wants a tour of what an AI agent wrote.
 ---
 
-<!-- vibecheck:version:1.0.10 -->
+<!-- vibecheck:version:1.0.9 -->
 
 # VibeCheck
 
@@ -73,9 +73,9 @@ Default response is compact. Start immediately with:
 
 ### 📖 Read in this order
 
-1. **[Label]** `path/to/file.ext:42`
+1. **[Label]** [path/to/file.ext:42-55](path/to/file.ext#L42-L55)
    [1 sentence: what to notice and why] [risk tag if needed]
-2. **[Label]** `path/to/file.ext:87-102`
+2. **[Label]** [path/to/file.ext:87-102](path/to/file.ext#L87-L102)
    [1 sentence]
 ```
 
