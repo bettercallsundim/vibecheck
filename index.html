@@ -4,16 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>vibecheck - Understand AI-written code before you ship it</title>
-  <meta name="description" content="vibecheck turns AI-written code changes into a short reading path, risk check, and optional quiz.">
+  <meta name="description" content="vibecheck turns AI-written code changes into a short handoff: reading order, risk scan, caller search, checklist, red team mode, and quiz.">
   <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
   <meta property="og:type" content="website">
   <meta property="og:title" content="vibecheck — The missing handoff between AI coding agents and human understanding">
-  <meta property="og:description" content="Turn AI-written code into a readable walkthrough. Works with Claude Code, Cursor, Windsurf, Copilot, Codex CLI, and Antigravity.">
+  <meta property="og:description" content="Turn AI-written code into a readable handoff with risks, caller search, before-merge checks, red team mode, and quiz.">
   <meta property="og:image" content="https://bettercallsundim.github.io/vibecheck/assets/readme-hero.png">
   <meta property="og:url" content="https://bettercallsundim.github.io/vibecheck">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="vibecheck — The missing handoff between AI coding agents and human understanding">
-  <meta name="twitter:description" content="Turn AI-written code into a readable walkthrough. Works with Claude Code, Cursor, Windsurf, Copilot, Codex CLI, and Antigravity.">
+  <meta name="twitter:description" content="Turn AI-written code into a readable handoff with risks, caller search, before-merge checks, red team mode, and quiz.">
   <meta name="twitter:image" content="https://bettercallsundim.github.io/vibecheck/assets/readme-hero.png">
   <style>
     :root {
@@ -770,8 +770,8 @@
         <div class="eyebrow">AI wrote it. You still own it.</div>
         <h1>Understand AI-written code before you ship it.</h1>
         <p class="hero-copy">
-          <code>vibecheck</code> turns fresh agent edits into a short reading path, risk check,
-          and optional quiz so you know what changed before it becomes production lore.
+          <code>vibecheck</code> turns fresh agent edits into a short handoff: reading order,
+          security scan, caller search, before-merge checklist, red team review, and optional quiz.
         </p>
         <div class="hero-actions">
           <a class="button" href="#install">Install the skill</a>
@@ -793,6 +793,7 @@
             <button class="chip active" data-demo="auth" type="button">/vibecheck</button>
             <button class="chip" data-demo="branch" type="button">/vibecheck main</button>
             <button class="chip" data-demo="quiz" type="button">/vibecheck --quiz</button>
+            <button class="chip" data-demo="redteam" type="button">/vibecheck --redteam</button>
           </div>
           <div class="output" id="demo-output" aria-live="polite"></div>
         </div>
@@ -805,16 +806,28 @@
         <p class="section-lead">
           One prompt later, your repo has new routes, helpers, env vars, and a migration
           with a suspiciously confident name. `vibecheck` turns that surprise diff into a
-          quick field guide: where to start, what to skip, what might bite, and what to ask next.
+          quick field guide: where to start, what to skip, what might bite, and what to verify next.
         </p>
         <div class="grid">
           <article class="feature">
             <strong>Follow the story, not the file list</strong>
-            <p>Diffs read like a receipt. Code runs like a story. VibeCheck orders the tour by how the feature actually works: data shape, logic, route, UI, tests.</p>
+            <p>Diffs read like a receipt. Code runs like a story. VibeCheck orders the tour by the codebase's actual execution path, not whatever order git printed.</p>
           </article>
           <article class="feature">
-            <strong>Find the spicy parts fast</strong>
-            <p>Auth touched? Payment webhook added? Env var renamed? Database rows deleted? VibeCheck marks the parts worth slowing down for, without yelling about every import.</p>
+            <strong>Security scan without the siren</strong>
+            <p>Secrets, auth gaps, unsafe inputs, data deletion, wildcard CORS, and shell/file access get called out with line references. Routine churn stays quiet.</p>
+          </article>
+          <article class="feature">
+            <strong>Caller search before claims</strong>
+            <p>"What could break" only appears when VibeCheck finds real callers, importers, tests, routes, env vars, or deleted/renamed files that connect to the diff.</p>
+          </article>
+          <article class="feature">
+            <strong>Before-you-merge checklist</strong>
+            <p>Instead of generic advice, you get specific checks from the diff: run this test, verify this env var, inspect this migration, confirm this permission.</p>
+          </article>
+          <article class="feature">
+            <strong>Red team the risky bits</strong>
+            <p>Add <code>--redteam</code> when a change touches auth, payments, permissions, jobs, database writes, public input, or anything attackers enjoy.</p>
           </article>
           <article class="feature">
             <strong>Make your brain prove it loaded</strong>
@@ -829,8 +842,8 @@
         <div>
           <h2>Install once. Run after every agent session.</h2>
           <p class="section-lead">
-            Use `npx` for a project install, add `--global` for every project on this
-            machine.
+            Use `npx` for a project install, add `--global` for common skill locations
+            on this machine. No keys, daemon, or runtime dependencies.
           </p>
           <div class="install-options">
             <div class="copy-box">
@@ -847,7 +860,7 @@
                 <button class="copy-button" type="button" data-copy="#install-global-command">Copy</button>
               </div>
               <pre id="install-global-command">npx vibecheck-code --global</pre>
-              <p class="install-note">Installs to all 6 tool-specific paths at once — Claude Code, Cursor, Windsurf, Copilot, Codex CLI, and Antigravity.</p>
+              <p class="install-note">Installs to common skill locations for Claude Code, Cursor, Windsurf, Copilot, Codex CLI, and Antigravity.</p>
             </div>
 
           </div>
@@ -871,7 +884,7 @@
             <span class="num">3</span>
             <div>
               <strong>Run `/vibecheck`</strong>
-              <p>Get a short walkthrough, real risks, and the follow-up questions worth asking.</p>
+              <p>Get a short handoff, real risks, caller impact, and the follow-up questions worth asking.</p>
             </div>
           </div>
         </div>
@@ -889,27 +902,27 @@
   <script>
     const demos = {
       auth: `
-        <div class="term-line term-title">VibeCheck: Feature flag bug fix</div>
-        <div class="term-line term-subtitle">Fixes a feature flag check that was letting disabled users see the new UI. The agent changed the helper, one page, and the regression test.</div>
+        <div class="term-line term-title">VibeCheck: Stripe webhook handoff</div>
+        <div class="term-line term-subtitle">Adds a webhook route, signature verification, event handlers, and tests. The risky part is middleware order.</div>
         <div class="term-line term-section">Read it in this order</div>
         <div class="term-step">
-          <div><span class="term-index">1 - The flag helper</span> <span class="term-file">src/features/isEnabled.ts:18</span></div>
-          <div>This is the actual bug fix. Read it first because every caller depends on true or false.</div>
+          <div><span class="term-index">1 - Raw body route</span> <span class="term-file">src/server/routes.ts:22</span></div>
+          <div>The webhook must mount before JSON parsing or signature verification will fail.</div>
+          <span class="term-risk high">High - payment verification</span>
         </div>
         <div class="term-step">
-          <div><span class="term-index">2 - The page guard</span> <span class="term-file">src/pages/dashboard.tsx:41</span></div>
-          <div>The page now uses the helper before showing the new panel.</div>
-          <span class="term-risk">Medium - UI visibility changed</span>
+          <div><span class="term-index">2 - Signature check</span> <span class="term-file">src/payments/stripeWebhook.ts:31</span></div>
+          <div>Verifies Stripe's signature before trusting the event payload.</div>
         </div>
         <div class="term-step">
-          <div><span class="term-index">3 - The regression test</span> <span class="term-file">tests/features.test.ts:27</span></div>
-          <div>Proves disabled flags hide the panel instead of silently leaking it.</div>
+          <div><span class="term-index">3 - Event handlers</span> <span class="term-file">src/payments/events.ts:44</span></div>
+          <div>Routes checkout completion and failed payment events into billing updates.</div>
         </div>
-        <div class="term-line term-section">What could break</div>
-        <div class="term-bullet">src/pages/settings.tsx has a similar flag check but was not updated</div>`,
+        <div class="term-line term-section">Before you merge</div>
+        <div class="term-bullet">Confirm STRIPE_WEBHOOK_SECRET is set in production and the webhook route runs before express.json().</div>`,
       branch: `
         <div class="term-line term-title">VibeCheck: Release branch vs main</div>
-        <div class="term-line term-subtitle">Groups the meaningful branch changes into one readable path: config, behavior, UI, and tests.</div>
+        <div class="term-line term-subtitle">Groups the meaningful branch changes into one readable path: config, behavior, UI, tests, and caller impact.</div>
         <div class="term-line term-section">Read it in this order</div>
         <div class="term-step">
           <div><span class="term-index">1 - Config switch</span> <span class="term-file">src/config/features.ts:9</span></div>
@@ -945,7 +958,23 @@
         <div class="term-line term-section">Quick check - did it land?</div>
         <div class="term-question">Q1: Why does the migration need a default for status?</div>
         <div class="term-question">Q2: What should happen to existing disabled users after deploy?</div>
-        <div class="term-question">Q3: Which tests prove login rejects disabled accounts?</div>`
+        <div class="term-question">Q3: Which tests prove login rejects disabled accounts?</div>`,
+      redteam: `
+        <div class="term-line term-title">VibeCheck: JWT login red team</div>
+        <div class="term-line term-subtitle">Normal walkthrough first, then adversarial review of token issuance, cookie settings, and disabled-user handling.</div>
+        <div class="term-line term-section">Read it in this order</div>
+        <div class="term-step">
+          <div><span class="term-index">1 - Login route</span> <span class="term-file">src/auth/login.ts:28</span></div>
+          <div>Checks credentials, loads user status, then issues tokens.</div>
+        </div>
+        <div class="term-step">
+          <div><span class="term-index">2 - Cookie options</span> <span class="term-file">src/auth/cookies.ts:12</span></div>
+          <div>Sets httpOnly and sameSite, but secure depends on environment.</div>
+          <span class="term-risk">Medium - deploy config</span>
+        </div>
+        <div class="term-line term-section">Red Team</div>
+        <div class="term-bullet">Attack surface: login accepts public input and writes session state.</div>
+        <div class="term-bullet">Hardening: verify disabled users cannot refresh existing sessions after status changes.</div>`
     };
 
     const output = document.querySelector("#demo-output");

@@ -4,7 +4,7 @@
 
 ![vibecheck](https://raw.githubusercontent.com/bettercallsundim/vibecheck/main/assets/readme-hero.png)
 
-`/vibecheck` turns fresh AI-written code into a short reading path: what changed, where to start, what matters, what could break, and how to prove you actually understood it.
+`/vibecheck` turns fresh AI-written code into a short handoff: what changed, where to start, what matters, what could break, and how to prove you actually understood it.
 
 Use it right after Claude Code, Cursor, Windsurf, Copilot, Codex CLI, or another coding agent edits your repo.
 
@@ -20,14 +20,22 @@ AI coding tools can produce a 7-file feature before you have finished reading th
 
 ---
 
+## See it in action
+
+![vibecheck demo](https://raw.githubusercontent.com/bettercallsundim/vibecheck/main/assets/demo.gif)
+
+---
+
 ## What you get
 
 - **A logical reading order** instead of a raw diff dump
-- **Clickable file references** so you can jump straight to the important blocks
-- **Plain-English explanations** of why each change matters
-- **Inline risk tags** for auth, payments, env config, data deletion, missing tests, and breaking APIs
-- **"What could break" callouts** only when real callers or cross-file impact are visible
-- **Quiz mode** with 3 focused questions to check whether the change actually landed in your head
+- **Session-aware context** when the assistant just edited the files
+- **Tracked + untracked file detection** so fresh AI-created files are not missed
+- **Security scan** for secrets, auth gaps, unsafe input, data deletion, and dangerous config
+- **Caller search** before claiming what could break
+- **Before-you-merge checklist** generated from the exact diff
+- **Quiz mode** with 3 focused questions to check whether the change landed in your head
+- **Red team mode** for adversarial attack-surface review
 
 ---
 
@@ -47,11 +55,20 @@ Installs to `.agents/skills/vibecheck/SKILL.md` in your current project. Commit 
 npx vibecheck-code --global
 ```
 
-Installs to all 6 tool-specific paths at once — Claude Code, Cursor, Windsurf, Copilot, Codex CLI, and Antigravity.
+Installs to common skill locations for Claude Code, Cursor, Windsurf, Copilot, Codex CLI, and Antigravity.
 
 Restart your AI coding tool after install.
 
 No API keys. No background service. No runtime dependencies.
+
+### Check or update
+
+```bash
+npx vibecheck-code --version
+npx vibecheck-code --update
+```
+
+`--update` refreshes installed copies of `SKILL.md` from the public GitHub repo.
 
 ---
 
@@ -82,11 +99,23 @@ That's the daily use case. Run it right after your agent finishes — you get a 
 
 If there is no useful session context, it falls back to git:
 
-- `/vibecheck` uses local changes
+- `/vibecheck` uses local tracked and untracked changes
 - `/vibecheck main` compares your branch against `main`
 - `/vibecheck path/to/file` scopes the walkthrough
 
-Then it builds a short reading path in execution order rather than filesystem order.
+Then it builds a short reading path in the codebase's native execution order rather than filesystem order. Web apps, CLIs, infra, and libraries should each get an order that matches how that code actually runs.
+
+---
+
+## Red team mode
+
+Use `--redteam` when the diff touches auth, payments, database writes, permissions, file access, shell commands, jobs, or public inputs:
+
+```bash
+/vibecheck --redteam
+```
+
+You still get the normal walkthrough first. Then `vibecheck` switches posture and asks what a reviewer or attacker would try: new attack surface, realistic exploitation paths, missed validation, trust boundaries, and concrete hardening suggestions.
 
 ---
 
@@ -105,6 +134,12 @@ The assistant asks 3 questions:
 - One about how the change connects to the rest of the codebase
 
 Answers are scored inline. No long recap. The goal is comprehension, not school.
+
+---
+
+## Compatibility note
+
+`vibecheck` emits file references in the output. Most AI IDEs can open the file, but exact line selection depends on the host tool. Antigravity may open the file without selecting the exact snippet.
 
 ---
 
