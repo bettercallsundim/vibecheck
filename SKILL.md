@@ -73,9 +73,9 @@ Default response is compact. Start immediately with:
 
 ### 📖 Read in this order
 
-1. **[Label]** [path/to/file.ext:42-55](path/to/file.ext#L42-L55)
+1. **[Label]** [src/file.ext:42-55](src/file.ext#L42-L55)
    [1 sentence: what to notice and why] [risk tag if needed]
-2. **[Label]** [path/to/file.ext:87-102](path/to/file.ext#L87-L102)
+2. **[Label]** [src/file.ext:87-102](src/file.ext#L87-L102)
    [1 sentence]
 ```
 
@@ -116,8 +116,10 @@ Only flag real findings. Do not invent risks for completeness.
   grouped line for the rest.
 - Each step: one sentence unless the risk truly needs two.
 - Skip empty sections entirely.
-- File links: use markdown format `[path:42-55](path#L42-L55)` — clickable in
-  Claude Code, Cursor, Codex, and Copilot. Plain `path:42` works in Antigravity.
+- File links: run `git rev-parse --show-toplevel` once to get the project root.
+  Then format every link as `[src/file.ts:42-55](/abs/root/src/file.ts#L42-L55)`.
+  Visible text stays relative (readable); href is absolute (required by Antigravity
+  and Codex CLI to open the file — relative paths cause "file not found" on click).
 - If the user asks for more detail, expand only the requested step or section.
 
 ## Red Team (`--redteam`)
