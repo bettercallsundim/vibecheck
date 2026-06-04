@@ -116,9 +116,8 @@ Only flag real findings. Do not invent risks for completeness.
   grouped line for the rest.
 - Each step: one sentence unless the risk truly needs two.
 - Skip empty sections entirely.
-- Prefer IDE-friendly `path:line` or `path:start-end` references over markdown
-  links. If an environment supports clickable markdown ranges, still keep the
-  visible text as `path:line` so Antigravity/Cursor-style file detection works.
+- File links: use markdown format `[path:42-55](path#L42-L55)` — clickable in
+  Claude Code, Cursor, Codex, and Copilot. Plain `path:42` works in Antigravity.
 - If the user asks for more detail, expand only the requested step or section.
 
 ## Red Team (`--redteam`)
