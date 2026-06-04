@@ -1,6 +1,6 @@
 {
   "name": "vibecheck-code",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Install the vibecheck skill for Claude Code, Cursor, Windsurf, Copilot, Codex CLI, and Antigravity",
   "homepage": "https://bettercallsundim.github.io/vibecheck",
   "bin": "./bin/install.js",
